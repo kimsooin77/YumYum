@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  nickname     String
+  passwordHash String    @map("password_hash")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  favorites Favorite[]
+  reviews   Review[]
+
+  @@map("users")
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  snacks Snack[]
+
+  @@map("categories")
+}
+
+model Brand {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  snacks Snack[]
+
+  @@map("brands")
+}
+
+model Snack {
+  id          Int       @id @default(autoincrement())
+  name        String
+  brandId     Int       @map("brand_id")
+  categoryId  Int       @map("category_id")
+  description String?
+  imageUrl    String?   @map("image_url")
+  price       Int?
+  releaseDate DateTime? @map("release_date") @db.Date
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  brand     Brand      @relation(fields: [brandId], references: [id])
+  category  Category   @relation(fields: [categoryId], references: [id])
+  favorites Favorite[]
+  reviews   Review[]
+
+  @@unique([name, brandId])
+  @@map("snacks")
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  snackId   Int      @map("snack_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  snack Snack @relation(fields: [snackId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, snackId])
+  @@map("favorites")
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  snackId   Int      @map("snack_id")
+  rating    Int
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  snack Snack @relation(fields: [snackId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, snackId])
+  @@map("reviews")
+}
