@@ -84,8 +84,11 @@ export class ConvenienceCrawler {
         const priceText = source.priceSelector ? $(el).find(source.priceSelector).text() : '';
         const price = this.parsePrice(priceText);
 
-        const imageUrl = source.imageSelector
-          ? $(el).find(source.imageSelector).attr('src') ?? undefined
+        const rawSrc = source.imageSelector
+          ? $(el).find(source.imageSelector).attr('src') ?? $(el).find(source.imageSelector).attr('data-src')
+          : undefined;
+        const imageUrl = rawSrc
+          ? rawSrc.startsWith('http') ? rawSrc : `https://${new URL(source.url).hostname}${rawSrc}`
           : undefined;
 
         const dateText = source.dateSelector ? $(el).find(source.dateSelector).text() : '';

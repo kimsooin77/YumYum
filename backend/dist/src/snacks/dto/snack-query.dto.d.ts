@@ -3,7 +3,8 @@ export declare class SnackQueryDto {
     limit: number;
     categoryId?: number;
     brandId?: number;
-    sort: 'newest' | 'rating';
+    sort: 'newest' | 'rating' | 'popular';
+    dateRange?: 'today' | 'week' | 'month';
 }
 export declare class SearchQueryDto {
     q?: string;

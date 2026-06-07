@@ -25,7 +25,16 @@ const NEW_PRODUCT_KEYWORDS = ['신제품', '출시', '런칭', '신상', '새롭
 const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
 let RssCrawler = RssCrawler_1 = class RssCrawler {
     logger = new common_1.Logger(RssCrawler_1.name);
-    parser = new rss_parser_1.default({ timeout: 10000 });
+    parser = new rss_parser_1.default({
+        timeout: 10000,
+        customFields: {
+            item: [
+                ['media:content', 'mediaContent'],
+                ['media:thumbnail', 'mediaThumbnail'],
+                'enclosure',
+            ],
+        },
+    });
     async crawl() {
         const results = [];
         for (const feed of RSS_FEEDS) {
@@ -40,12 +49,16 @@ let RssCrawler = RssCrawler_1 = class RssCrawler {
                     const brand = feed.brand ?? this.extractBrand(item.title + ' ' + (item.contentSnippet ?? ''));
                     if (!brand)
                         continue;
+                    const imageUrl = item.mediaContent?.$.url ??
+                        item.mediaThumbnail?.$.url ??
+                        item.enclosure?.url;
                     const snack = {
                         name: this.extractProductName(item.title ?? ''),
                         brand: (0, normalize_1.normalizeBrand)(brand),
                         category: (0, normalize_1.classifyCategory)(item.title ?? ''),
                         description: item.contentSnippet?.slice(0, 300),
                         releaseDate,
+                        imageUrl,
                     };
                     if (snack.name)
                         results.push(snack);

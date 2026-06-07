@@ -37,13 +37,20 @@ export declare class FavoritesRepository {
                     id: number;
                     name: string;
                 };
+                reviews: {
+                    rating: number;
+                }[];
+                _count: {
+                    favorites: number;
+                    reviews: number;
+                };
             } & {
+                imageUrl: string | null;
                 id: number;
                 name: string;
                 brandId: number;
                 categoryId: number;
                 description: string | null;
-                imageUrl: string | null;
                 price: number | null;
                 releaseDate: Date | null;
                 createdAt: Date;

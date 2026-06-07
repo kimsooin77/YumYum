@@ -27,7 +27,16 @@ const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
 @Injectable()
 export class RssCrawler {
   private readonly logger = new Logger(RssCrawler.name);
-  private readonly parser = new Parser({ timeout: 10000 });
+  private readonly parser = new Parser({
+    timeout: 10000,
+    customFields: {
+      item: [
+        ['media:content', 'mediaContent'],
+        ['media:thumbnail', 'mediaThumbnail'],
+        'enclosure',
+      ],
+    },
+  });
 
   async crawl(): Promise<RawSnack[]> {
     const results: RawSnack[] = [];
@@ -44,12 +53,18 @@ export class RssCrawler {
           const brand = feed.brand ?? this.extractBrand(item.title + ' ' + (item.contentSnippet ?? ''));
           if (!brand) continue;
 
+          const imageUrl: string | undefined =
+            (item as any).mediaContent?.$.url ??
+            (item as any).mediaThumbnail?.$.url ??
+            (item as any).enclosure?.url;
+
           const snack: RawSnack = {
             name: this.extractProductName(item.title ?? ''),
             brand: normalizeBrand(brand),
             category: classifyCategory(item.title ?? ''),
             description: item.contentSnippet?.slice(0, 300),
             releaseDate,
+            imageUrl,
           };
 
           if (snack.name) results.push(snack);

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getToken, removeToken } from './auth';
-import type { Snack, Review, Favorite, Paginated, AuthTokens, User, Category, Brand } from '@/types';
+import type { Snack, Review, Favorite, Paginated, AuthTokens, User, Category, Brand, BlogPost } from '@/types';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000',
@@ -42,13 +42,15 @@ export const usersApi = {
 
 // Snacks
 export const snacksApi = {
-  list: (params?: { page?: number; limit?: number; categoryId?: number; brandId?: number; sort?: string }) =>
+  list: (params?: { page?: number; limit?: number; categoryId?: number; brandId?: number; sort?: string; dateRange?: 'today' | 'week' | 'month' }) =>
     api.get<Paginated<Snack>>('/snacks', { params }).then((r) => r.data),
   newArrivals: (limit?: number) =>
     api.get<Snack[]>('/snacks/new', { params: { limit } }).then((r) => r.data),
   search: (params: { q: string; page?: number; limit?: number }) =>
     api.get<Paginated<Snack>>('/snacks/search', { params }).then((r) => r.data),
   detail: (id: number) => api.get<Snack>(`/snacks/${id}`).then((r) => r.data),
+  blogReviews: (id: number) =>
+    api.get<BlogPost[]>(`/snacks/${id}/blog-reviews`).then((r) => r.data),
 };
 
 // Categories

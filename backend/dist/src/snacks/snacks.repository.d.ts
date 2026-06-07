@@ -3,7 +3,7 @@ import { SnackQueryDto } from './dto/snack-query.dto';
 export declare class SnacksRepository {
     private readonly prisma;
     constructor(prisma: PrismaService);
-    findAll(query: SnackQueryDto): Promise<{
+    findAll(query: SnackQueryDto, userId?: number | null): Promise<{
         data: ({
             category: {
                 id: number;
@@ -13,6 +13,12 @@ export declare class SnacksRepository {
                 id: number;
                 name: string;
             };
+            favorites: {
+                id: number;
+                createdAt: Date;
+                userId: number;
+                snackId: number;
+            }[];
             reviews: {
                 rating: number;
             }[];
@@ -21,12 +27,12 @@ export declare class SnacksRepository {
                 reviews: number;
             };
         } & {
+            imageUrl: string | null;
             id: number;
             name: string;
             brandId: number;
             categoryId: number;
             description: string | null;
-            imageUrl: string | null;
             price: number | null;
             releaseDate: Date | null;
             createdAt: Date;
@@ -50,12 +56,12 @@ export declare class SnacksRepository {
             reviews: number;
         };
     } & {
+        imageUrl: string | null;
         id: number;
         name: string;
         brandId: number;
         categoryId: number;
         description: string | null;
-        imageUrl: string | null;
         price: number | null;
         releaseDate: Date | null;
         createdAt: Date;
@@ -78,12 +84,12 @@ export declare class SnacksRepository {
                 reviews: number;
             };
         } & {
+            imageUrl: string | null;
             id: number;
             name: string;
             brandId: number;
             categoryId: number;
             description: string | null;
-            imageUrl: string | null;
             price: number | null;
             releaseDate: Date | null;
             createdAt: Date;
@@ -108,12 +114,12 @@ export declare class SnacksRepository {
                 reviews: number;
             };
         } & {
+            imageUrl: string | null;
             id: number;
             name: string;
             brandId: number;
             categoryId: number;
             description: string | null;
-            imageUrl: string | null;
             price: number | null;
             releaseDate: Date | null;
             createdAt: Date;
@@ -137,12 +143,12 @@ export declare class SnacksRepository {
             reviews: number;
         };
     } & {
+        imageUrl: string | null;
         id: number;
         name: string;
         brandId: number;
         categoryId: number;
         description: string | null;
-        imageUrl: string | null;
         price: number | null;
         releaseDate: Date | null;
         createdAt: Date;

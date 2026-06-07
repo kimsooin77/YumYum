@@ -46,6 +46,8 @@ let FavoritesRepository = class FavoritesRepository {
                         include: {
                             brand: { select: { id: true, name: true } },
                             category: { select: { id: true, name: true } },
+                            _count: { select: { reviews: true, favorites: true } },
+                            reviews: { select: { rating: true } },
                         },
                     },
                 },

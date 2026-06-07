@@ -2,22 +2,24 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Search, Heart, Star, User, LogOut } from 'lucide-react';
+import { Heart, User, LogOut, Store, Search, Moon, Sun } from 'lucide-react';
 import { isLoggedIn, removeToken } from '@/lib/auth';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/context/theme-context';
 
 const navItems = [
-  { href: '/snacks', label: '홈', icon: '🍿' },
-  { href: '/search', label: '검색', Icon: Search },
-  { href: '/recommendations', label: '추천', Icon: Star },
+  { href: '/snacks', label: '홈', icon: '🏠' },
+  { href: '/new', label: '신상', icon: '🆕' },
+  { href: '/convenience', label: '편의점', Icon: Store },
   { href: '/favorites', label: '관심', Icon: Heart },
-  { href: '/profile', label: '내 정보', Icon: User },
+  { href: '/profile', label: '마이', Icon: User },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const loggedIn = isLoggedIn();
+  const { dark, toggle } = useTheme();
 
   const handleLogout = () => {
     removeToken();
@@ -33,7 +35,13 @@ export default function Navbar() {
           <Link href="/snacks" className="text-xl font-bold text-orange-500">
             YumYum 🍪
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <button onClick={toggle} className="text-gray-500 hover:text-orange-500 transition-colors">
+              {dark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <Link href="/search" className="text-gray-500 hover:text-orange-500 transition-colors">
+              <Search className="w-5 h-5" />
+            </Link>
             {loggedIn ? (
               <button
                 onClick={handleLogout}

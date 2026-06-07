@@ -30,6 +30,8 @@ export class NewsCrawler {
         const html = await this.fetchWithTimeout(source.url);
         const $ = cheerio.load(html);
 
+        const articleLinks: string[] = [];
+
         $(source.titleSelector).each((_, el) => {
           try {
             const title = $(el).text().trim();
@@ -43,6 +45,13 @@ export class NewsCrawler {
 
             if (releaseDate && Date.now() - releaseDate.getTime() > THREE_MONTHS_MS) return;
 
+            const href = $(el).find('a').attr('href') ?? $(el).closest('li').find(source.linkSelector).attr('href');
+            const articleUrl = href
+              ? href.startsWith('http') ? href : `${source.baseUrl}${href}`
+              : null;
+
+            if (articleUrl) articleLinks.push(articleUrl);
+
             const snack: RawSnack = {
               name: this.extractProductName(title),
               brand: normalizeBrand(brand),
@@ -55,12 +64,32 @@ export class NewsCrawler {
             // skip individual item errors
           }
         });
+
+        // Fetch og:image from articles (up to 5, parallel)
+        const imageResults = await Promise.allSettled(
+          articleLinks.slice(0, 5).map((url) => this.fetchOgImage(url))
+        );
+        imageResults.forEach((res, i) => {
+          if (res.status === 'fulfilled' && res.value && results[i]) {
+            results[i].imageUrl = res.value;
+          }
+        });
       } catch (e) {
         this.logger.warn(`News crawl failed: ${source.url} — ${(e as Error).message}`);
       }
     }
 
     return results;
+  }
+
+  private async fetchOgImage(url: string): Promise<string | null> {
+    try {
+      const html = await this.fetchWithTimeout(url, 5000);
+      const $ = cheerio.load(html);
+      return $('meta[property="og:image"]').attr('content') ?? null;
+    } catch {
+      return null;
+    }
   }
 
   private async fetchWithTimeout(url: string, timeoutMs = 10000): Promise<string> {

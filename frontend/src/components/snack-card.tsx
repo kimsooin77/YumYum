@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { favoritesApi } from '@/lib/api';
@@ -15,15 +16,34 @@ interface SnackCardProps {
 
 export default function SnackCard({ snack }: SnackCardProps) {
   const queryClient = useQueryClient();
+  const [imgError, setImgError] = useState(false);
+  const [localFavorited, setLocalFavorited] = useState(snack.isFavorited ?? false);
+  const [localFavoriteId, setLocalFavoriteId] = useState(snack.favoriteId);
+
+  useEffect(() => {
+    setLocalFavorited(snack.isFavorited ?? false);
+    setLocalFavoriteId(snack.favoriteId ?? undefined);
+  }, [snack.isFavorited, snack.favoriteId]);
 
   const addFav = useMutation({
     mutationFn: () => favoritesApi.add(snack.id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['snacks'] }),
+    onMutate: () => setLocalFavorited(true),
+    onSuccess: (data) => {
+      setLocalFavoriteId(data.id);
+      queryClient.invalidateQueries({ queryKey: ['snacks'] });
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+    },
+    onError: () => setLocalFavorited(false),
   });
 
   const removeFav = useMutation({
-    mutationFn: () => favoritesApi.remove(snack.favoriteId!),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['snacks'] }),
+    mutationFn: (id: number) => favoritesApi.remove(id),
+    onMutate: () => { setLocalFavorited(false); setLocalFavoriteId(undefined); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['snacks'] });
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+    },
+    onError: () => { setLocalFavorited(true); setLocalFavoriteId(snack.favoriteId); },
   });
 
   const handleFavorite = (e: React.MouseEvent) => {
@@ -32,8 +52,8 @@ export default function SnackCard({ snack }: SnackCardProps) {
       window.location.href = '/login';
       return;
     }
-    if (snack.isFavorited && snack.favoriteId) {
-      removeFav.mutate();
+    if (localFavorited && localFavoriteId) {
+      removeFav.mutate(localFavoriteId);
     } else {
       addFav.mutate();
     }
@@ -45,12 +65,14 @@ export default function SnackCard({ snack }: SnackCardProps) {
     <Link href={`/snacks/${snack.id}`} className="group block">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
         <div className="relative aspect-square bg-gray-100">
-          {snack.imageUrl ? (
+          {snack.imageUrl && !imgError ? (
             <Image
               src={snack.imageUrl}
               alt={snack.name}
               fill
+              unoptimized
               className="object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={() => setImgError(true)}
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-4xl">🍿</div>
@@ -60,10 +82,10 @@ export default function SnackCard({ snack }: SnackCardProps) {
             disabled={isPending}
             className={cn(
               'absolute top-2 right-2 p-2 rounded-full bg-white/80 backdrop-blur-sm shadow-sm transition-all',
-              snack.isFavorited ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
+              localFavorited ? 'text-red-500' : 'text-gray-400 hover:text-red-400'
             )}
           >
-            <Heart className={cn('w-4 h-4', snack.isFavorited && 'fill-current')} />
+            <Heart className={cn('w-4 h-4', localFavorited && 'fill-current')} />
           </button>
         </div>
         <div className="p-3">

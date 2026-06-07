@@ -59,3 +59,11 @@ export interface Paginated<T> {
 export interface AuthTokens {
   accessToken: string;
 }
+
+export interface BlogPost {
+  title: string;
+  link: string;
+  description: string;
+  bloggerName: string;
+  postDate: string;
+}

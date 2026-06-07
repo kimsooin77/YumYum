@@ -68,6 +68,7 @@ let NewsCrawler = NewsCrawler_1 = class NewsCrawler {
             try {
                 const html = await this.fetchWithTimeout(source.url);
                 const $ = cheerio.load(html);
+                const articleLinks = [];
                 $(source.titleSelector).each((_, el) => {
                     try {
                         const title = $(el).text().trim();
@@ -80,6 +81,12 @@ let NewsCrawler = NewsCrawler_1 = class NewsCrawler {
                         const releaseDate = (0, normalize_1.parseKoreanDate)(dateText) ?? undefined;
                         if (releaseDate && Date.now() - releaseDate.getTime() > THREE_MONTHS_MS)
                             return;
+                        const href = $(el).find('a').attr('href') ?? $(el).closest('li').find(source.linkSelector).attr('href');
+                        const articleUrl = href
+                            ? href.startsWith('http') ? href : `${source.baseUrl}${href}`
+                            : null;
+                        if (articleUrl)
+                            articleLinks.push(articleUrl);
                         const snack = {
                             name: this.extractProductName(title),
                             brand: (0, normalize_1.normalizeBrand)(brand),
@@ -92,12 +99,28 @@ let NewsCrawler = NewsCrawler_1 = class NewsCrawler {
                     catch {
                     }
                 });
+                const imageResults = await Promise.allSettled(articleLinks.slice(0, 5).map((url) => this.fetchOgImage(url)));
+                imageResults.forEach((res, i) => {
+                    if (res.status === 'fulfilled' && res.value && results[i]) {
+                        results[i].imageUrl = res.value;
+                    }
+                });
             }
             catch (e) {
                 this.logger.warn(`News crawl failed: ${source.url} — ${e.message}`);
             }
         }
         return results;
+    }
+    async fetchOgImage(url) {
+        try {
+            const html = await this.fetchWithTimeout(url, 5000);
+            const $ = cheerio.load(html);
+            return $('meta[property="og:image"]').attr('content') ?? null;
+        }
+        catch {
+            return null;
+        }
     }
     async fetchWithTimeout(url, timeoutMs = 10000) {
         const res = await axios_1.default.get(url, {

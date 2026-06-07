@@ -60,9 +60,9 @@ export declare class ReviewsService {
     }>;
     findAllByUserId(userId: number): Promise<({
         snack: {
+            imageUrl: string | null;
             id: number;
             name: string;
-            imageUrl: string | null;
         };
     } & {
         id: number;

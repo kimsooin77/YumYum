@@ -1,7 +1,8 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query, Request, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { SnacksService } from './snacks.service';
 import { SnackQueryDto, SearchQueryDto } from './dto/snack-query.dto';
+import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard';
 
 @ApiTags('snacks')
 @Controller('snacks')
@@ -9,9 +10,10 @@ export class SnacksController {
   constructor(private readonly snacksService: SnacksService) {}
 
   @ApiOperation({ summary: '과자 목록 조회' })
+  @UseGuards(OptionalJwtAuthGuard)
   @Get()
-  findAll(@Query() query: SnackQueryDto) {
-    return this.snacksService.findAll(query);
+  findAll(@Query() query: SnackQueryDto, @Request() req: any) {
+    return this.snacksService.findAll(query, req.user?.id ?? null);
   }
 
   @ApiOperation({ summary: '신상품 목록 조회 (최근 30일)' })
@@ -29,6 +31,12 @@ export class SnacksController {
   @Get('search')
   search(@Query() query: SearchQueryDto) {
     return this.snacksService.search(query);
+  }
+
+  @ApiOperation({ summary: '과자 블로그 후기 조회 (네이버 블로그)' })
+  @Get(':id/blog-reviews')
+  getBlogReviews(@Param('id', ParseIntPipe) id: number) {
+    return this.snacksService.getBlogReviews(id);
   }
 
   @ApiOperation({ summary: '과자 상세 조회' })

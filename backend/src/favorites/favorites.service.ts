@@ -28,6 +28,35 @@ export class FavoritesService {
   async findAll(userId: number, page: number, limit: number) {
     const { data, total } = await this.favoritesRepository.findAllByUserId(userId, page, limit);
     const totalPages = Math.ceil(total / limit);
-    return { data, meta: { total, page, limit, totalPages } };
+    const formatted = data.map((fav: any) => {
+      const snack = fav.snack;
+      const ratings = snack.reviews?.map((r: any) => r.rating) ?? [];
+      const avgRating =
+        ratings.length > 0
+          ? Math.round((ratings.reduce((s: number, r: number) => s + r, 0) / ratings.length) * 10) / 10
+          : 0;
+      return {
+        id: fav.id,
+        snackId: fav.snackId,
+        createdAt: fav.createdAt,
+        snack: {
+          id: snack.id,
+          name: snack.name,
+          description: snack.description,
+          imageUrl: snack.imageUrl,
+          price: snack.price,
+          releaseDate: snack.releaseDate,
+          createdAt: snack.createdAt,
+          brand: snack.brand,
+          category: snack.category,
+          avgRating,
+          reviewCount: snack._count?.reviews ?? 0,
+          favoriteCount: snack._count?.favorites ?? 0,
+          isFavorited: true,
+          favoriteId: fav.id,
+        },
+      };
+    });
+    return { data: formatted, total, page, limit, totalPages };
   }
 }

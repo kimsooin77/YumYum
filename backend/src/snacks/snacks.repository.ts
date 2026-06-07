@@ -13,19 +13,42 @@ const snackInclude = {
 export class SnacksRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(query: SnackQueryDto) {
-    const { page, limit, categoryId, brandId, sort } = query;
+  async findAll(query: SnackQueryDto, userId?: number | null) {
+    const { page, limit, categoryId, brandId, sort, dateRange } = query;
     const skip = (page - 1) * limit;
+
+    let releaseDateFilter: { gte: Date } | undefined;
+    if (dateRange) {
+      const from = new Date();
+      if (dateRange === 'today') {
+        from.setHours(0, 0, 0, 0);
+      } else if (dateRange === 'week') {
+        from.setDate(from.getDate() - 7);
+      } else if (dateRange === 'month') {
+        from.setDate(from.getDate() - 30);
+      }
+      releaseDateFilter = { gte: from };
+    }
 
     const where = {
       ...(categoryId && { categoryId }),
       ...(brandId && { brandId }),
+      ...(releaseDateFilter && { releaseDate: releaseDateFilter }),
     };
 
     const orderBy =
       sort === 'rating'
         ? { reviews: { _count: 'desc' as const } }
-        : { createdAt: 'desc' as const };
+        : sort === 'popular'
+          ? { favorites: { _count: 'desc' as const } }
+          : { releaseDate: 'desc' as const };
+
+    const include = {
+      ...snackInclude,
+      ...(userId && {
+        favorites: { where: { userId }, select: { id: true } },
+      }),
+    };
 
     const [data, total] = await Promise.all([
       this.prisma.snack.findMany({
@@ -33,7 +56,7 @@ export class SnacksRepository {
         skip,
         take: limit,
         orderBy,
-        include: snackInclude,
+        include,
       }),
       this.prisma.snack.count({ where }),
     ]);
@@ -78,7 +101,7 @@ export class SnacksRepository {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { releaseDate: 'desc' },
         include: snackInclude,
       }),
       this.prisma.snack.count({ where }),

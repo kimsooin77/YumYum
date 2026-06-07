@@ -41,6 +41,7 @@ const SNACKS = [
         price: 1500,
         releaseDate: new Date('2026-05-01'),
         description: '애플망고의 진한 달콤함에 부드러운 우유 풍미를 더한 스낵. 바나나킥, 메론킥에 이은 킥 시리즈 세 번째 신제품.',
+        imageUrl: 'https://nongshimmall.com/web/product/big/202511/0d8a4d7f30066d66906ed272487ef497.jpg',
     },
     {
         name: '꼬북칩 말차초코맛',
@@ -49,6 +50,7 @@ const SNACKS = [
         price: 1800,
         releaseDate: new Date('2026-03-15'),
         description: '꼬북칩 브랜드의 한정판 말차초코맛. 네 겹으로 쌓인 바삭한 과자에 말차와 초콜릿의 조화.',
+        imageUrl: 'https://www.orionworld.com/upload/goods/65a1684a3425b34ed02112ca5e211836.png',
     },
     {
         name: '꼬북칩 바베큐&치미추리소스맛',
@@ -57,6 +59,7 @@ const SNACKS = [
         price: 1800,
         releaseDate: new Date('2026-05-10'),
         description: '유용욱바베큐연구소 콜라보. 꼬북칩 최초로 소스를 동봉한 제품. 훈연향과 메이플 시럽의 달콤한 풍미.',
+        imageUrl: 'https://www.orionworld.com/upload/goods/992389b811f954272c62f2afe6bdf77b.png',
     },
     {
         name: '쉘위 클래식',
@@ -65,6 +68,7 @@ const SNACKS = [
         price: 6000,
         releaseDate: new Date('2026-03-10'),
         description: '생크림 26% 함량의 프리미엄 디저트 파이. 부드러운 크림을 채운 고급 파이로 50일 만에 1,000만 개 판매 돌파.',
+        imageUrl: 'https://crcf.cookatmarket.com/singong/images/2026/01/coxa_1767770513_3423.png',
     },
     {
         name: '쉘위 카카오',
@@ -73,6 +77,7 @@ const SNACKS = [
         price: 6000,
         releaseDate: new Date('2026-03-10'),
         description: '진한 카카오 크림을 채운 프리미엄 디저트 파이. 쉘위 클래식의 카카오 버전.',
+        imageUrl: 'https://crcf.cookatmarket.com/singong/images/2026/01/cari_1768869096_6843.png',
     },
     {
         name: '스트로베리 빼빼로',
@@ -268,6 +273,7 @@ async function main() {
                 price: snack.price,
                 releaseDate: snack.releaseDate,
                 categoryId,
+                imageUrl: snack.imageUrl,
             },
             create: {
                 name: snack.name,
@@ -276,6 +282,7 @@ async function main() {
                 description: snack.description,
                 price: snack.price,
                 releaseDate: snack.releaseDate,
+                imageUrl: snack.imageUrl,
             },
         });
         count++;

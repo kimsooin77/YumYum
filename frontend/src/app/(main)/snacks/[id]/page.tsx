@@ -28,6 +28,8 @@ export default function SnackDetailPage({ params }: Props) {
   const queryClient = useQueryClient();
   const loggedIn = isLoggedIn();
 
+  const [imgError, setImgError] = useState(false);
+
   const { data: snack, isLoading } = useQuery({
     queryKey: ['snack', snackId],
     queryFn: () => snacksApi.detail(snackId),
@@ -36,6 +38,12 @@ export default function SnackDetailPage({ params }: Props) {
   const { data: reviews } = useQuery({
     queryKey: ['reviews', snackId],
     queryFn: () => reviewsApi.listBySnack(snackId, { limit: 20 }),
+  });
+
+  const { data: blogReviews } = useQuery({
+    queryKey: ['blogReviews', snackId],
+    queryFn: () => snacksApi.blogReviews(snackId),
+    staleTime: 1000 * 60 * 10, // 10 minutes
   });
 
   const addFav = useMutation({
@@ -91,8 +99,8 @@ export default function SnackDetailPage({ params }: Props) {
     <div className="flex flex-col gap-5">
       {/* 이미지 */}
       <div className="relative aspect-square bg-gray-100 rounded-2xl overflow-hidden">
-        {snack.imageUrl ? (
-          <Image src={snack.imageUrl} alt={snack.name} fill className="object-cover" />
+        {snack.imageUrl && !imgError ? (
+          <Image src={snack.imageUrl} alt={snack.name} fill unoptimized className="object-cover" onError={() => setImgError(true)} />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-6xl">🍿</div>
         )}
@@ -142,6 +150,44 @@ export default function SnackDetailPage({ params }: Props) {
             출시일: {new Date(snack.releaseDate).toLocaleDateString('ko-KR')}
           </p>
         )}
+      </div>
+
+      {/* 블로그 후기 */}
+      <div className="bg-white rounded-xl p-4 shadow-sm">
+        <h2 className="font-bold text-gray-900 mb-3">블로그 후기</h2>
+        {blogReviews && blogReviews.length > 0 && (
+          <div className="flex flex-col gap-4 mb-4">
+            {blogReviews.map((post, i) => (
+              <a
+                key={i}
+                href={post.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block group"
+              >
+                <p className="text-xs text-gray-400 mb-0.5">
+                  {post.bloggerName}{post.bloggerName && post.postDate ? ' · ' : ''}{post.postDate}
+                </p>
+                <p className="text-sm font-medium text-gray-900 group-hover:text-orange-500 transition-colors line-clamp-1">
+                  {post.title}
+                </p>
+                {post.description && (
+                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">
+                    {post.description}
+                  </p>
+                )}
+              </a>
+            ))}
+          </div>
+        )}
+        <a
+          href={`https://search.naver.com/search.naver?where=blog&query=${encodeURIComponent(snack.name)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-center text-xs text-orange-500 font-medium hover:underline"
+        >
+          네이버에서 더 보기 →
+        </a>
       </div>
 
       {/* 리뷰 작성 */}

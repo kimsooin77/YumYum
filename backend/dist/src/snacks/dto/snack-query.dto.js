@@ -19,6 +19,7 @@ class SnackQueryDto {
     categoryId;
     brandId;
     sort = 'newest';
+    dateRange;
 }
 exports.SnackQueryDto = SnackQueryDto;
 __decorate([
@@ -52,11 +53,17 @@ __decorate([
     __metadata("design:type", Number)
 ], SnackQueryDto.prototype, "brandId", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ enum: ['newest', 'rating'], default: 'newest' }),
+    (0, swagger_1.ApiPropertyOptional)({ enum: ['newest', 'rating', 'popular'], default: 'newest' }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsIn)(['newest', 'rating']),
+    (0, class_validator_1.IsIn)(['newest', 'rating', 'popular']),
     __metadata("design:type", String)
 ], SnackQueryDto.prototype, "sort", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ enum: ['today', 'week', 'month'] }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsIn)(['today', 'week', 'month']),
+    __metadata("design:type", String)
+], SnackQueryDto.prototype, "dateRange", void 0);
 class SearchQueryDto {
     q;
     page = 1;

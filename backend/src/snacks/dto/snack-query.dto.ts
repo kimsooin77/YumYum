@@ -29,10 +29,15 @@ export class SnackQueryDto {
   @IsInt()
   brandId?: number;
 
-  @ApiPropertyOptional({ enum: ['newest', 'rating'], default: 'newest' })
+  @ApiPropertyOptional({ enum: ['newest', 'rating', 'popular'], default: 'newest' })
   @IsOptional()
-  @IsIn(['newest', 'rating'])
-  sort: 'newest' | 'rating' = 'newest';
+  @IsIn(['newest', 'rating', 'popular'])
+  sort: 'newest' | 'rating' | 'popular' = 'newest';
+
+  @ApiPropertyOptional({ enum: ['today', 'week', 'month'] })
+  @IsOptional()
+  @IsIn(['today', 'week', 'month'])
+  dateRange?: 'today' | 'week' | 'month';
 }
 
 export class SearchQueryDto {

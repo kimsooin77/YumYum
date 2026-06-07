@@ -23,23 +23,46 @@ let SnacksRepository = class SnacksRepository {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async findAll(query) {
-        const { page, limit, categoryId, brandId, sort } = query;
+    async findAll(query, userId) {
+        const { page, limit, categoryId, brandId, sort, dateRange } = query;
         const skip = (page - 1) * limit;
+        let releaseDateFilter;
+        if (dateRange) {
+            const from = new Date();
+            if (dateRange === 'today') {
+                from.setHours(0, 0, 0, 0);
+            }
+            else if (dateRange === 'week') {
+                from.setDate(from.getDate() - 7);
+            }
+            else if (dateRange === 'month') {
+                from.setDate(from.getDate() - 30);
+            }
+            releaseDateFilter = { gte: from };
+        }
         const where = {
             ...(categoryId && { categoryId }),
             ...(brandId && { brandId }),
+            ...(releaseDateFilter && { releaseDate: releaseDateFilter }),
         };
         const orderBy = sort === 'rating'
             ? { reviews: { _count: 'desc' } }
-            : { createdAt: 'desc' };
+            : sort === 'popular'
+                ? { favorites: { _count: 'desc' } }
+                : { releaseDate: 'desc' };
+        const include = {
+            ...snackInclude,
+            ...(userId && {
+                favorites: { where: { userId }, select: { id: true } },
+            }),
+        };
         const [data, total] = await Promise.all([
             this.prisma.snack.findMany({
                 where,
                 skip,
                 take: limit,
                 orderBy,
-                include: snackInclude,
+                include,
             }),
             this.prisma.snack.count({ where }),
         ]);
@@ -76,7 +99,7 @@ let SnacksRepository = class SnacksRepository {
                 where,
                 skip,
                 take: limit,
-                orderBy: { createdAt: 'desc' },
+                orderBy: { releaseDate: 'desc' },
                 include: snackInclude,
             }),
             this.prisma.snack.count({ where }),

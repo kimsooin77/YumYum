@@ -14,38 +14,30 @@ export declare class FavoritesController {
         message: string;
     }>;
     findAll(user: CurrentUserPayload, page?: string, limit?: string): Promise<{
-        data: ({
+        data: {
+            id: any;
+            snackId: any;
+            createdAt: any;
             snack: {
-                category: {
-                    id: number;
-                    name: string;
-                };
-                brand: {
-                    id: number;
-                    name: string;
-                };
-            } & {
-                id: number;
-                name: string;
-                brandId: number;
-                categoryId: number;
-                description: string | null;
-                imageUrl: string | null;
-                price: number | null;
-                releaseDate: Date | null;
-                createdAt: Date;
+                id: any;
+                name: any;
+                description: any;
+                imageUrl: any;
+                price: any;
+                releaseDate: any;
+                createdAt: any;
+                brand: any;
+                category: any;
+                avgRating: number;
+                reviewCount: any;
+                favoriteCount: any;
+                isFavorited: boolean;
+                favoriteId: any;
             };
-        } & {
-            id: number;
-            createdAt: Date;
-            userId: number;
-            snackId: number;
-        })[];
-        meta: {
-            total: number;
-            page: number;
-            limit: number;
-            totalPages: number;
-        };
+        }[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
     }>;
 }
