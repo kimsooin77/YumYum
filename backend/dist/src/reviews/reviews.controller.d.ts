@@ -36,6 +36,21 @@ export declare class ReviewsController {
     delete(id: number, user: CurrentUserPayload): Promise<{
         message: string;
     }>;
+    findMyReviews(user: CurrentUserPayload): Promise<({
+        snack: {
+            imageUrl: string | null;
+            id: number;
+            name: string;
+        };
+    } & {
+        id: number;
+        createdAt: Date;
+        content: string;
+        rating: number;
+        userId: number;
+        snackId: number;
+        updatedAt: Date;
+    })[]>;
     findAllBySnack(snackId: number, page?: string, limit?: string, sort?: 'newest' | 'highest' | 'lowest'): Promise<{
         data: ({
             user: {

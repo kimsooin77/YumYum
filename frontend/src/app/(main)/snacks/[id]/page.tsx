@@ -4,7 +4,7 @@ import { use, useState } from 'react';
 import Image from 'next/image';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { snacksApi, reviewsApi, favoritesApi } from '@/lib/api';
-import { isLoggedIn } from '@/lib/auth';
+import { isLoggedIn, getCurrentUserId } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Heart, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -27,8 +27,13 @@ export default function SnackDetailPage({ params }: Props) {
   const snackId = Number(id);
   const queryClient = useQueryClient();
   const loggedIn = isLoggedIn();
+  const currentUserId = getCurrentUserId();
 
   const [imgError, setImgError] = useState(false);
+  const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
+  const [editRating, setEditRating] = useState(5);
+  const [editContent, setEditContent] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const { data: snack, isLoading } = useQuery({
     queryKey: ['snack', snackId],
@@ -62,6 +67,26 @@ export default function SnackDetailPage({ params }: Props) {
       queryClient.invalidateQueries({ queryKey: ['reviews', snackId] });
       queryClient.invalidateQueries({ queryKey: ['snack', snackId] });
       reset();
+    },
+    onError: (error: any) => {
+      const msg = error?.response?.data?.message;
+      const text = Array.isArray(msg) ? msg[0] : (msg ?? '등록에 실패했습니다.');
+      alert(text);
+    },
+  });
+
+  const updateReview = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: { rating: number; content: string } }) =>
+      reviewsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews', snackId] });
+      queryClient.invalidateQueries({ queryKey: ['snack', snackId] });
+      setEditingReviewId(null);
+    },
+    onError: (error: any) => {
+      const msg = error?.response?.data?.message;
+      const text = Array.isArray(msg) ? msg[0] : (msg ?? '수정에 실패했습니다.');
+      alert(text);
     },
   });
 
@@ -232,41 +257,97 @@ export default function SnackDetailPage({ params }: Props) {
         {reviews?.data.length === 0 && (
           <div className="text-center py-8 text-gray-400 text-sm">첫 번째 리뷰를 남겨보세요!</div>
         )}
-        {reviews?.data.map((review) => (
-          <div key={review.id} className="bg-white rounded-xl p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-sm text-gray-900">{review.user.nickname}</span>
-                  <div className="flex">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={cn(
-                          'w-3.5 h-3.5',
-                          i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'
-                        )}
-                      />
-                    ))}
+        {reviews?.data.map((review) => {
+          const isOwner = review.user.id === currentUserId;
+          const isEditing = editingReviewId === review.id;
+          return (
+            <div key={review.id} className="bg-white rounded-xl p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm text-gray-900">{review.user.nickname}</span>
+                    {!isEditing && (
+                      <div className="flex">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} className={cn('w-3.5 h-3.5', i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200')} />
+                        ))}
+                      </div>
+                    )}
                   </div>
+
+                  {isEditing ? (
+                    <div className="mt-2 flex flex-col gap-2">
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button key={star} type="button" onClick={() => setEditRating(star)}>
+                            <Star className={cn('w-6 h-6', star <= editRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200')} />
+                          </button>
+                        ))}
+                      </div>
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        rows={3}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm resize-none focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400/20"
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" loading={updateReview.isPending}
+                          onClick={() => updateReview.mutate({ id: review.id, data: { rating: editRating, content: editContent } })}>
+                          저장
+                        </Button>
+                        <Button size="sm" variant="secondary" onClick={() => setEditingReviewId(null)}>취소</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-sm text-gray-700 mt-1 leading-relaxed">{review.content}</p>
+                      <p className="text-xs text-gray-400 mt-1">{new Date(review.createdAt).toLocaleDateString('ko-KR')}</p>
+                    </>
+                  )}
                 </div>
-                <p className="text-sm text-gray-700 mt-1 leading-relaxed">{review.content}</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  {new Date(review.createdAt).toLocaleDateString('ko-KR')}
-                </p>
+
+                {isOwner && !isEditing && (
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      onClick={() => { setEditingReviewId(review.id); setEditRating(review.rating); setEditContent(review.content); }}
+                      className="text-xs text-gray-400 hover:text-orange-400"
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteId(review.id)}
+                      className="text-xs text-gray-400 hover:text-red-400"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )}
               </div>
-              {loggedIn && (
-                <button
-                  onClick={() => deleteReview.mutate(review.id)}
-                  className="text-xs text-gray-400 hover:text-red-400 shrink-0"
-                >
-                  삭제
-                </button>
-              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 삭제 확인 모달 */}
+      {confirmDeleteId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setConfirmDeleteId(null)}>
+          <div className="bg-white rounded-2xl p-6 mx-4 w-full max-w-xs shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <p className="text-center font-semibold text-gray-900 mb-1">리뷰를 삭제하시겠습니까?</p>
+            <p className="text-center text-sm text-gray-500 mb-5">삭제된 리뷰는 복구할 수 없습니다.</p>
+            <div className="flex gap-2">
+              <Button variant="secondary" className="flex-1" onClick={() => setConfirmDeleteId(null)}>취소</Button>
+              <Button
+                variant="danger"
+                className="flex-1"
+                loading={deleteReview.isPending}
+                onClick={() => { deleteReview.mutate(confirmDeleteId); setConfirmDeleteId(null); }}
+              >
+                삭제
+              </Button>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

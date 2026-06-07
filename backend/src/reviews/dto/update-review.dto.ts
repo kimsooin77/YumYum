@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator';
+import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class UpdateReviewDto {
   @ApiPropertyOptional({ minimum: 1, maximum: 5 })
@@ -12,6 +12,5 @@ export class UpdateReviewDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  @MinLength(10)
   content?: string;
 }

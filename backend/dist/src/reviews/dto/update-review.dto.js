@@ -29,7 +29,6 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)(),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(10),
     __metadata("design:type", String)
 ], UpdateReviewDto.prototype, "content", void 0);
 //# sourceMappingURL=update-review.dto.js.map

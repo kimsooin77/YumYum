@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsString, Max, Min, MinLength } from 'class-validator';
+import { IsInt, IsString, Max, Min } from 'class-validator';
 
 export class CreateReviewDto {
   @ApiProperty({ description: '과자 ID' })
@@ -12,8 +12,7 @@ export class CreateReviewDto {
   @Max(5)
   rating: number;
 
-  @ApiProperty({ description: '리뷰 내용 (최소 10자)' })
+  @ApiProperty({ description: '리뷰 내용' })
   @IsString()
-  @MinLength(10)
   content: string;
 }

@@ -3,10 +3,11 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { usersApi, favoritesApi } from '@/lib/api';
+import { usersApi, favoritesApi, reviewsApi } from '@/lib/api';
 import { isLoggedIn, removeToken } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { User, Heart, LogOut } from 'lucide-react';
+import { User, Heart, LogOut, Star } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -25,6 +26,12 @@ export default function ProfilePage() {
   const { data: favorites } = useQuery({
     queryKey: ['favorites'],
     queryFn: () => favoritesApi.list({ limit: 1 }),
+    enabled: loggedIn,
+  });
+
+  const { data: myReviews } = useQuery({
+    queryKey: ['myReviews'],
+    queryFn: reviewsApi.listByMe,
     enabled: loggedIn,
   });
 
@@ -61,9 +68,33 @@ export default function ProfilePage() {
           <p className="text-xs text-gray-500">관심 과자</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-sm text-center">
-          <User className="w-6 h-6 text-orange-400 mx-auto mb-1" />
-          <p className="text-2xl font-bold text-gray-900">🍪</p>
-          <p className="text-xs text-gray-500">과자 탐험가</p>
+          <Star className="w-6 h-6 text-yellow-400 fill-yellow-400 mx-auto mb-1" />
+          <p className="text-2xl font-bold text-gray-900">{myReviews?.length ?? 0}</p>
+          <p className="text-xs text-gray-500">작성 리뷰</p>
+        </div>
+      </div>
+
+      {/* 내가 쓴 리뷰 */}
+      <div className="bg-white rounded-xl p-4 shadow-sm">
+        <h2 className="font-bold text-gray-900 mb-3">내가 쓴 리뷰 {myReviews?.length ?? 0}개</h2>
+        {myReviews?.length === 0 && (
+          <p className="text-sm text-gray-400 text-center py-4">아직 작성한 리뷰가 없어요</p>
+        )}
+        <div className="flex flex-col divide-y divide-gray-100">
+          {myReviews?.map((review) => (
+            <div key={review.id} className="py-3 first:pt-0 last:pb-0">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-medium text-gray-900 truncate">{review.snack.name}</p>
+                <div className="flex shrink-0">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className={cn('w-3.5 h-3.5', i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200')} />
+                  ))}
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mt-0.5 leading-relaxed">{review.content}</p>
+              <p className="text-xs text-gray-400 mt-1">{new Date(review.createdAt).toLocaleDateString('ko-KR')}</p>
+            </div>
+          ))}
         </div>
       </div>
 

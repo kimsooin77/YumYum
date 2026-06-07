@@ -34,6 +34,9 @@ let ReviewsController = class ReviewsController {
     delete(id, user) {
         return this.reviewsService.delete(id, user.id);
     }
+    findMyReviews(user) {
+        return this.reviewsService.findAllByUserId(user.id);
+    }
     findAllBySnack(snackId, page = '1', limit = '10', sort = 'newest') {
         return this.reviewsService.findAllBySnackId(snackId, Number(page), Number(limit), sort);
     }
@@ -76,6 +79,16 @@ __decorate([
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", void 0)
 ], ReviewsController.prototype, "delete", null);
+__decorate([
+    (0, swagger_1.ApiOperation)({ summary: '내 리뷰 목록' }),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('me'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ReviewsController.prototype, "findMyReviews", null);
 __decorate([
     (0, swagger_1.ApiOperation)({ summary: '특정 과자의 리뷰 목록 조회' }),
     (0, swagger_1.ApiQuery)({ name: 'page', required: false }),

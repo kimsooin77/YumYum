@@ -62,6 +62,14 @@ export class ReviewsController {
     return this.reviewsService.delete(id, user.id);
   }
 
+  @ApiOperation({ summary: '내 리뷰 목록' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  findMyReviews(@CurrentUser() user: CurrentUserPayload) {
+    return this.reviewsService.findAllByUserId(user.id);
+  }
+
   @ApiOperation({ summary: '특정 과자의 리뷰 목록 조회' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })

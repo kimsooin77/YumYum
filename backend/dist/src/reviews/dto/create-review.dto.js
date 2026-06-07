@@ -31,9 +31,8 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateReviewDto.prototype, "rating", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: '리뷰 내용 (최소 10자)' }),
+    (0, swagger_1.ApiProperty)({ description: '리뷰 내용' }),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(10),
     __metadata("design:type", String)
 ], CreateReviewDto.prototype, "content", void 0);
 //# sourceMappingURL=create-review.dto.js.map

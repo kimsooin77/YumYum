@@ -81,6 +81,8 @@ export const reviewsApi = {
   update: (id: number, data: { rating?: number; content?: string }) =>
     api.put<Review>(`/reviews/${id}`, data).then((r) => r.data),
   delete: (id: number) => api.delete(`/reviews/${id}`).then((r) => r.data),
+  listByMe: () =>
+    api.get<(Review & { snack: { id: number; name: string; imageUrl: string | null } })[]>('/reviews/me').then((r) => r.data),
 };
 
 // Recommendations
