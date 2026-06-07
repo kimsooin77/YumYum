@@ -76,7 +76,7 @@ function NewArrivalsContent() {
       ) : Object.keys(grouped).length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <p className="text-4xl mb-2">🍪</p>
-          <p className="text-sm">해당 기간에 등록된 신상품이 없습니다</p>
+          <p className="text-sm">해당 기간에 등록된 상품이 없습니다</p>
         </div>
       ) : (
         <>

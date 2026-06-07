@@ -8,7 +8,8 @@ import SnackCard from '@/components/snack-card';
 import { BrandLogo } from '@/components/brand-logo';
 import { isLoggedIn } from '@/lib/auth';
 import { ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { SortDropdown } from '@/components/ui/sort-dropdown';
+
 
 const CONVENIENCE_BRANDS = ['CU', 'GS25', '세븐일레븐', '이마트24'];
 
@@ -55,7 +56,7 @@ function TodaySection() {
       </div>
       {snacks.length === 0 ? (
         <div className="bg-orange-50 rounded-xl p-4 text-center">
-          <p className="text-sm text-orange-400">오늘 등록된 신상품이 없어요</p>
+          <p className="text-sm text-orange-400">오늘 등록된 상품이 없어요</p>
           <Link href="/new?range=week" className="text-xs text-orange-500 font-medium mt-1 inline-block">
             이번주 신상 보기 →
           </Link>
@@ -113,20 +114,7 @@ function PopularSection({ sort, onSortChange }: { sort: string; onSortChange: (s
     <section>
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-sm font-bold text-gray-800">📈 이번달 신상품</h2>
-        <div className="flex gap-2">
-          {SORT_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => onSortChange(opt.value)}
-              className={cn(
-                'text-xs transition-colors',
-                sort === opt.value ? 'text-orange-500 font-semibold' : 'text-gray-400'
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        <SortDropdown options={SORT_OPTIONS} value={sort} onChange={onSortChange} />
       </div>
 
       {isLoading ? (

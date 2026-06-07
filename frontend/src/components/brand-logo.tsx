@@ -27,8 +27,8 @@ export function BrandLogo({ name, size = 52 }: { name: string; size?: number }) 
 
   return (
     <div
-      style={{ width: size, height: size }}
-      className="rounded-2xl overflow-hidden flex items-center justify-center bg-white border border-gray-100 shrink-0"
+      style={{ width: size, height: size, boxShadow: '0 1px 4px rgba(0,0,0,0.12)' }}
+      className="rounded-2xl overflow-hidden flex items-center justify-center brand-logo-bg p-1 shrink-0"
     >
       <Image
         src={src}

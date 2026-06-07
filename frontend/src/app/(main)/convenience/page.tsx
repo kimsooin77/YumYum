@@ -8,6 +8,7 @@ import SnackCard from '@/components/snack-card';
 import { BrandLogo } from '@/components/brand-logo';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { SortDropdown } from '@/components/ui/sort-dropdown';
 import { cn } from '@/lib/utils';
 
 const CONVENIENCE_BRANDS = [
@@ -96,20 +97,11 @@ function ConvenienceContent() {
           <span className="font-semibold text-gray-900">{selectedBrandName}</span> 신상품
           {data && <span className="text-gray-400 ml-1">({data.total}개)</span>}
         </p>
-        <div className="flex gap-3">
-          {SORT_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => { setSort(opt.value); setPage(1); }}
-              className={cn(
-                'text-xs transition-colors',
-                sort === opt.value ? 'text-orange-500 font-semibold' : 'text-gray-400'
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        <SortDropdown
+          options={SORT_OPTIONS}
+          value={sort}
+          onChange={(v) => { setSort(v); setPage(1); }}
+        />
       </div>
 
       {/* Grid */}
